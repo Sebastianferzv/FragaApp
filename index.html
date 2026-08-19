@@ -18,26 +18,6 @@
   <span class="shape shape-triangle shape-azul shape-5"></span>
   <span class="shape shape-circle shape-verde shape-6"></span>
 </div>
-<div class="login-screen" id="login-screen">
-  <form class="card login-card" id="login-form">
-    <div class="brand login-brand">
-      <span class="brand-mark">
-        <span class="brand-shape brand-circle"></span>
-        <span class="brand-shape brand-triangle"></span>
-      </span>
-      <h1>Frag<span class="brand-accent">app</span></h1>
-    </div>
-    <p class="muted">Ingresa la contraseña para entrar a tu panel.</p>
-    <div class="field">
-      <label for="login-password">Contraseña</label>
-      <input type="password" id="login-password" required autocomplete="current-password">
-    </div>
-    <p class="form-error" id="login-error" hidden>Contraseña incorrecta.</p>
-    <button type="submit" class="btn btn-primary">Entrar</button>
-  </form>
-</div>
-
-<div id="app-shell" hidden>
 <header class="topbar">
   <div class="brand">
     <span class="brand-mark">
@@ -46,13 +26,10 @@
     </span>
     <h1>Frag<span class="brand-accent">app</span></h1>
   </div>
-  <div class="topbar-right">
-    <nav class="tabs" id="tabs">
-      <button class="tab-btn active" data-tab="productos">Productos</button>
-      <button class="tab-btn" data-tab="ajustes">Calculadora de costos</button>
-    </nav>
-    <button class="btn btn-ghost" id="btn-logout">Cerrar sesión</button>
-  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="productos">Productos</button>
+    <button class="tab-btn" data-tab="ajustes">Calculadora de costos</button>
+  </nav>
 </header>
 
 <main class="content">
@@ -122,7 +99,6 @@
   </section>
 
 </main>
-</div>
 
 <!-- MODAL PRODUCTO -->
 <div class="modal-overlay" id="modal-overlay" hidden>

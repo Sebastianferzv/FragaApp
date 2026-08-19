@@ -501,49 +501,6 @@ body {
   border: 2px solid var(--azul-oscuro);
 }
 
-/* Topbar con nav + logout */
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-/* Login */
-.login-screen {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 380px;
-  text-align: center;
-}
-
-.login-brand {
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.login-card .muted {
-  margin-bottom: 18px;
-}
-
-.login-card .field {
-  text-align: left;
-}
-
-.login-card .btn {
-  width: 100%;
-  margin-top: 4px;
-}
-
 .form-error {
   color: var(--rojo);
   font-weight: 600;

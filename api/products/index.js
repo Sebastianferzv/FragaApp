@@ -1,5 +1,4 @@
 import { sql, ensureSchema } from "../_lib/db.js";
-import { requireAuth } from "../_lib/auth.js";
 
 function toCamel(row) {
   return {
@@ -14,7 +13,6 @@ function toCamel(row) {
 }
 
 export default async function handler(req, res) {
-  if (!requireAuth(req, res)) return;
   await ensureSchema();
 
   if (req.method === "GET") {
