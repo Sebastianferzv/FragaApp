@@ -1,12 +1,10 @@
 import { handleUpload } from "@vercel/blob/client";
 
-export default async function handler(request) {
-  const body = await request.json();
-
+export default async function handler(req, res) {
   try {
     const jsonResponse = await handleUpload({
-      body,
-      request,
+      body: req.body,
+      request: req,
       onBeforeGenerateToken: async () => ({
         allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
         addRandomSuffix: true,
@@ -14,8 +12,8 @@ export default async function handler(request) {
       onUploadCompleted: async () => {},
     });
 
-    return Response.json(jsonResponse);
+    res.status(200).json(jsonResponse);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 400 });
+    res.status(400).json({ error: error.message });
   }
 }
