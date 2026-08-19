@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frag App — Gestión de Impresión 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="bg-shapes" aria-hidden="true">
+  <span class="shape shape-circle shape-azul shape-1"></span>
+  <span class="shape shape-triangle shape-rosado shape-2"></span>
+  <span class="shape shape-zigzag shape-verde shape-3"></span>
+  <span class="shape shape-circle shape-rosado shape-4"></span>
+  <span class="shape shape-triangle shape-azul shape-5"></span>
+  <span class="shape shape-circle shape-verde shape-6"></span>
+</div>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">
+      <span class="brand-shape brand-circle"></span>
+      <span class="brand-shape brand-triangle"></span>
+    </span>
+    <h1>Frag<span class="brand-accent">app</span></h1>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="productos">Productos</button>
+    <button class="tab-btn" data-tab="ajustes">Calculadora de costos</button>
+  </nav>
+</header>
+
+<main class="content">
+
+  <!-- PANEL PRODUCTOS -->
+  <section class="panel active" id="panel-productos">
+    <div class="panel-header">
+      <div>
+        <h2>Productos</h2>
+        <p class="muted">Gestiona tu catálogo y revisa el margen de ganancia de cada pieza.</p>
+      </div>
+      <button class="btn btn-primary" id="btn-nuevo-producto">+ Nuevo producto</button>
+    </div>
+
+    <div class="empty-state" id="productos-empty" hidden>
+      <p>Todavía no tienes productos. Crea el primero para ver su costo y margen.</p>
+    </div>
+
+    <div class="grid" id="productos-grid"></div>
+  </section>
+
+  <!-- PANEL AJUSTES / CALCULADORA -->
+  <section class="panel" id="panel-ajustes">
+    <div class="panel-header">
+      <div>
+        <h2>Calculadora de costos</h2>
+        <p class="muted">Define los valores fijos con los que se calcula el costo de fabricación. Puedes editarlos cuando cambien.</p>
+      </div>
+    </div>
+
+    <div class="ajustes-layout">
+      <form class="card form" id="form-ajustes">
+        <div class="field">
+          <label for="precioKiloFilamento">Precio del kilo de filamento (CLP)</label>
+          <input type="number" id="precioKiloFilamento" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="consumoKw">Consumo de la impresora (kW)</label>
+          <input type="number" id="consumoKw" min="0" step="0.001" required>
+        </div>
+        <div class="field">
+          <label for="precioKwh">Precio de la luz (CLP por kWh)</label>
+          <input type="number" id="precioKwh" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="desgastePorHora">Constante de desgaste (CLP por hora)</label>
+          <input type="number" id="desgastePorHora" min="0" step="1" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar ajustes</button>
+        <p class="save-confirm" id="ajustes-confirm" hidden>Ajustes guardados ✓</p>
+      </form>
+
+      <div class="card simulador">
+        <h3>Simulador rápido</h3>
+        <p class="muted">Prueba la fórmula con valores de ejemplo, sin crear un producto.</p>
+        <div class="field">
+          <label for="sim-gramos">Gramos de filamento</label>
+          <input type="number" id="sim-gramos" min="0" step="1" value="0">
+        </div>
+        <div class="field">
+          <label for="sim-horas">Horas de impresión</label>
+          <input type="number" id="sim-horas" min="0" step="0.1" value="0">
+        </div>
+        <div class="desglose" id="sim-desglose"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL PRODUCTO -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3 id="modal-title">Nuevo producto</h3>
+      <button class="btn-icon" id="modal-close" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-producto">
+      <input type="hidden" id="producto-id">
+      <div class="field">
+        <label for="producto-nombre">Nombre</label>
+        <input type="text" id="producto-nombre" required>
+      </div>
+      <div class="field">
+        <label for="producto-foto">Foto</label>
+        <input type="file" id="producto-foto" accept="image/*">
+        <img id="producto-foto-preview" class="foto-preview" hidden alt="Vista previa">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="producto-precio">Precio de venta (CLP)</label>
+          <input type="number" id="producto-precio" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="producto-gramos">Gramos de filamento</label>
+          <input type="number" id="producto-gramos" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="producto-horas">Horas de impresión</label>
+          <input type="number" id="producto-horas" min="0" step="0.1" required>
+        </div>
+      </div>
+      <div class="desglose" id="producto-desglose"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
