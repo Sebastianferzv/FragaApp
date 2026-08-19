@@ -14,7 +14,7 @@ function renderDesglose(container, gramos, horas, settings) {
   `;
 }
 
-export function initAjustesPanel(onSettingsChanged) {
+export async function initAjustesPanel(onSettingsChanged) {
   const form = document.getElementById("form-ajustes");
   const confirm = document.getElementById("ajustes-confirm");
   const inputs = {
@@ -28,34 +28,43 @@ export function initAjustesPanel(onSettingsChanged) {
   const simHoras = document.getElementById("sim-horas");
   const simDesglose = document.getElementById("sim-desglose");
 
+  let currentSettings = await getSettings();
+
   function loadIntoForm() {
-    const settings = getSettings();
-    inputs.precioKiloFilamento.value = settings.precioKiloFilamento;
-    inputs.consumoKw.value = settings.consumoKw;
-    inputs.precioKwh.value = settings.precioKwh;
-    inputs.desgastePorHora.value = settings.desgastePorHora;
+    inputs.precioKiloFilamento.value = currentSettings.precioKiloFilamento;
+    inputs.consumoKw.value = currentSettings.consumoKw;
+    inputs.precioKwh.value = currentSettings.precioKwh;
+    inputs.desgastePorHora.value = currentSettings.desgastePorHora;
   }
 
   function updateSimulador() {
-    const settings = getSettings();
     const gramos = Number(simGramos.value) || 0;
     const horas = Number(simHoras.value) || 0;
-    renderDesglose(simDesglose, gramos, horas, settings);
+    renderDesglose(simDesglose, gramos, horas, currentSettings);
   }
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const settings = {
+    const nextSettings = {
       precioKiloFilamento: Number(inputs.precioKiloFilamento.value) || 0,
       consumoKw: Number(inputs.consumoKw.value) || 0,
       precioKwh: Number(inputs.precioKwh.value) || 0,
       desgastePorHora: Number(inputs.desgastePorHora.value) || 0,
     };
-    saveSettings(settings);
-    confirm.hidden = false;
-    setTimeout(() => (confirm.hidden = true), 2500);
-    updateSimulador();
-    onSettingsChanged?.();
+
+    try {
+      currentSettings = await saveSettings(nextSettings);
+      confirm.textContent = "Ajustes guardados ✓";
+      confirm.classList.remove("error");
+      confirm.hidden = false;
+      setTimeout(() => (confirm.hidden = true), 2500);
+      updateSimulador();
+      onSettingsChanged?.();
+    } catch (err) {
+      confirm.textContent = "No se pudo guardar: " + err.message;
+      confirm.classList.add("error");
+      confirm.hidden = false;
+    }
   });
 
   simGramos.addEventListener("input", updateSimulador);

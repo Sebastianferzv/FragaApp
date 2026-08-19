@@ -1,4 +1,5 @@
-import { getProducts, upsertProduct, deleteProduct, generateId, getSettings } from "./storage.js";
+import { upload } from "https://esm.sh/@vercel/blob@2.8.0/client";
+import { getProducts, createProduct, updateProduct, deleteProduct, getSettings } from "./storage.js";
 import { calcularCosto, calcularMargen, formatCLP, formatPct } from "./calculator.js";
 
 const grid = document.getElementById("productos-grid");
@@ -7,6 +8,7 @@ const emptyState = document.getElementById("productos-empty");
 const overlay = document.getElementById("modal-overlay");
 const modalTitle = document.getElementById("modal-title");
 const form = document.getElementById("form-producto");
+const submitBtn = form.querySelector('button[type="submit"]');
 const inputId = document.getElementById("producto-id");
 const inputNombre = document.getElementById("producto-nombre");
 const inputFoto = document.getElementById("producto-foto");
@@ -15,21 +17,30 @@ const inputPrecio = document.getElementById("producto-precio");
 const inputGramos = document.getElementById("producto-gramos");
 const inputHoras = document.getElementById("producto-horas");
 const productoDesglose = document.getElementById("producto-desglose");
+const productoError = document.getElementById("producto-error");
 
-let fotoDataUrl = null;
+let selectedFile = null;
+let currentFotoUrl = null;
+let cachedSettings = null;
+
+async function refreshSettingsCache() {
+  cachedSettings = await getSettings();
+}
 
 function openModal(product = null) {
   form.reset();
-  fotoDataUrl = product?.fotoDataUrl || null;
-  inputId.value = product?.id || "";
+  selectedFile = null;
+  currentFotoUrl = product?.fotoUrl || null;
+  inputId.value = product?.id ?? "";
   inputNombre.value = product?.nombre || "";
   inputPrecio.value = product?.precioVenta ?? "";
   inputGramos.value = product?.gramosFilamento ?? "";
   inputHoras.value = product?.horas ?? "";
   modalTitle.textContent = product ? "Editar producto" : "Nuevo producto";
+  productoError.hidden = true;
 
-  if (fotoDataUrl) {
-    fotoPreview.src = fotoDataUrl;
+  if (currentFotoUrl) {
+    fotoPreview.src = currentFotoUrl;
     fotoPreview.hidden = false;
   } else {
     fotoPreview.hidden = true;
@@ -44,13 +55,13 @@ function closeModal() {
 }
 
 function updateDesglosePreview() {
-  const settings = getSettings();
+  if (!cachedSettings) return;
   const gramos = Number(inputGramos.value) || 0;
   const horas = Number(inputHoras.value) || 0;
   const precioVenta = Number(inputPrecio.value) || 0;
   const { costoFilamento, costoLuz, costoDesgaste, costoTotal } = calcularCosto(
     { gramos, horas },
-    settings
+    cachedSettings
   );
   const { margen, margenPct } = calcularMargen(precioVenta, costoTotal);
   productoDesglose.innerHTML = `
@@ -62,9 +73,9 @@ function updateDesglosePreview() {
   `;
 }
 
-function renderProductos() {
-  const products = getProducts();
-  const settings = getSettings();
+async function renderProductos() {
+  await refreshSettingsCache();
+  const products = await getProducts();
 
   emptyState.hidden = products.length > 0;
   grid.innerHTML = "";
@@ -72,7 +83,7 @@ function renderProductos() {
   products.forEach((product) => {
     const { costoTotal } = calcularCosto(
       { gramos: product.gramosFilamento, horas: product.horas },
-      settings
+      cachedSettings
     );
     const { margen, margenPct } = calcularMargen(product.precioVenta, costoTotal);
     const esPositivo = margen >= 0;
@@ -81,8 +92,8 @@ function renderProductos() {
     card.className = "producto-card";
     card.innerHTML = `
       ${
-        product.fotoDataUrl
-          ? `<img class="producto-foto" src="${product.fotoDataUrl}" alt="${product.nombre}">`
+        product.fotoUrl
+          ? `<img class="producto-foto" src="${product.fotoUrl}" alt="${product.nombre}">`
           : `<div class="producto-foto-placeholder">🖨️</div>`
       }
       <div class="producto-body">
@@ -103,10 +114,13 @@ function renderProductos() {
     `;
 
     card.querySelector(".btn-editar").addEventListener("click", () => openModal(product));
-    card.querySelector(".btn-eliminar").addEventListener("click", () => {
-      if (confirm(`¿Eliminar "${product.nombre}"?`)) {
-        deleteProduct(product.id);
-        renderProductos();
+    card.querySelector(".btn-eliminar").addEventListener("click", async () => {
+      if (!confirm(`¿Eliminar "${product.nombre}"?`)) return;
+      try {
+        await deleteProduct(product.id);
+        await renderProductos();
+      } catch (err) {
+        alert("No se pudo eliminar el producto: " + err.message);
       }
     });
 
@@ -114,7 +128,7 @@ function renderProductos() {
   });
 }
 
-export function initProductosPanel() {
+export async function initProductosPanel() {
   document.getElementById("btn-nuevo-producto").addEventListener("click", () => openModal());
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
@@ -125,10 +139,10 @@ export function initProductosPanel() {
   inputFoto.addEventListener("change", () => {
     const file = inputFoto.files[0];
     if (!file) return;
+    selectedFile = file;
     const reader = new FileReader();
     reader.onload = () => {
-      fotoDataUrl = reader.result;
-      fotoPreview.src = fotoDataUrl;
+      fotoPreview.src = reader.result;
       fotoPreview.hidden = false;
     };
     reader.readAsDataURL(file);
@@ -138,25 +152,52 @@ export function initProductosPanel() {
     input.addEventListener("input", updateDesglosePreview)
   );
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const product = {
-      id: inputId.value || generateId(),
-      nombre: inputNombre.value.trim(),
-      fotoDataUrl,
-      precioVenta: Number(inputPrecio.value) || 0,
-      gramosFilamento: Number(inputGramos.value) || 0,
-      horas: Number(inputHoras.value) || 0,
-      creadoEn: Date.now(),
-    };
-    upsertProduct(product);
-    closeModal();
-    renderProductos();
+    productoError.hidden = true;
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+
+    try {
+      let fotoUrl = currentFotoUrl;
+      if (selectedFile) {
+        submitBtn.textContent = "Subiendo foto...";
+        const blob = await upload(selectedFile.name, selectedFile, {
+          access: "public",
+          handleUploadUrl: "/api/blob/upload",
+        });
+        fotoUrl = blob.url;
+      }
+
+      submitBtn.textContent = "Guardando...";
+      const payload = {
+        nombre: inputNombre.value.trim(),
+        fotoUrl,
+        precioVenta: Number(inputPrecio.value) || 0,
+        gramosFilamento: Number(inputGramos.value) || 0,
+        horas: Number(inputHoras.value) || 0,
+      };
+
+      if (inputId.value) {
+        await updateProduct(Number(inputId.value), payload);
+      } else {
+        await createProduct(payload);
+      }
+
+      closeModal();
+      await renderProductos();
+    } catch (err) {
+      productoError.textContent = "No se pudo guardar: " + err.message;
+      productoError.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
   });
 
-  renderProductos();
+  await renderProductos();
 }
 
-export function refreshProductos() {
-  renderProductos();
+export async function refreshProductos() {
+  await renderProductos();
 }

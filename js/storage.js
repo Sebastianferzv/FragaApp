@@ -1,50 +1,70 @@
-const SETTINGS_KEY = "frag_settings";
-const PRODUCTS_KEY = "frag_products";
+const JSON_HEADERS = { "Content-Type": "application/json" };
 
-const DEFAULT_SETTINGS = {
-  precioKiloFilamento: 0,
-  consumoKw: 0,
-  precioKwh: 0,
-  desgastePorHora: 100,
-};
+async function request(url, options = {}) {
+  const response = await fetch(url, { credentials: "same-origin", ...options });
 
-export function getSettings() {
-  const raw = localStorage.getItem(SETTINGS_KEY);
-  if (!raw) return { ...DEFAULT_SETTINGS };
-  return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-}
-
-export function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-}
-
-export function getProducts() {
-  const raw = localStorage.getItem(PRODUCTS_KEY);
-  return raw ? JSON.parse(raw) : [];
-}
-
-export function saveProducts(products) {
-  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-}
-
-export function upsertProduct(product) {
-  const products = getProducts();
-  const index = products.findIndex((p) => p.id === product.id);
-  if (index >= 0) {
-    products[index] = product;
-  } else {
-    products.push(product);
+  if (response.status === 401) {
+    const error = new Error("No autenticado");
+    error.code = "UNAUTHORIZED";
+    throw error;
   }
-  saveProducts(products);
-  return products;
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || `Error ${response.status}`);
+  }
+  if (response.status === 204) return null;
+  return response.json();
 }
 
-export function deleteProduct(id) {
-  const products = getProducts().filter((p) => p.id !== id);
-  saveProducts(products);
-  return products;
+export async function login(password) {
+  return request("/api/auth/login", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ password }),
+  });
 }
 
-export function generateId() {
-  return `p_${Math.random().toString(36).slice(2, 10)}`;
+export async function logout() {
+  return request("/api/auth/logout", { method: "POST" });
+}
+
+export async function checkAuth() {
+  const result = await request("/api/auth/status");
+  return result.authenticated;
+}
+
+export async function getSettings() {
+  return request("/api/settings");
+}
+
+export async function saveSettings(settings) {
+  return request("/api/settings", {
+    method: "PUT",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(settings),
+  });
+}
+
+export async function getProducts() {
+  return request("/api/products");
+}
+
+export async function createProduct(product) {
+  return request("/api/products", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(product),
+  });
+}
+
+export async function updateProduct(id, product) {
+  return request(`/api/products/${id}`, {
+    method: "PUT",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(product),
+  });
+}
+
+export async function deleteProduct(id) {
+  return request(`/api/products/${id}`, { method: "DELETE" });
 }
