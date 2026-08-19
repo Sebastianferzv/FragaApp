@@ -1,6 +1,44 @@
-import { upload } from "https://esm.sh/@vercel/blob@2.8.0/client";
 import { getProducts, createProduct, updateProduct, deleteProduct, getSettings } from "./storage.js";
 import { calcularCosto, calcularMargen, formatCLP, formatPct } from "./calculator.js";
+
+const MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 0.82;
+
+async function compressImage(file) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, width, height);
+
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY));
+}
+
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function uploadFoto(file) {
+  const compressed = await compressImage(file);
+  const dataUrl = await blobToDataURL(compressed);
+  const response = await fetch("/api/blob/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: "foto.jpg", dataUrl }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || "No se pudo subir la foto");
+  return body.url;
+}
 
 const grid = document.getElementById("productos-grid");
 const emptyState = document.getElementById("productos-empty");
@@ -162,11 +200,7 @@ export async function initProductosPanel() {
       let fotoUrl = currentFotoUrl;
       if (selectedFile) {
         submitBtn.textContent = "Subiendo foto...";
-        const blob = await upload(selectedFile.name, selectedFile, {
-          access: "public",
-          handleUploadUrl: "/api/blob/upload",
-        });
-        fotoUrl = blob.url;
+        fotoUrl = await uploadFoto(selectedFile);
       }
 
       submitBtn.textContent = "Guardando...";
