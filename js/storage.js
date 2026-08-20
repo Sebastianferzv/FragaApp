@@ -70,3 +70,11 @@ export async function createSale(payload) {
 export async function getStockHistory() {
   return request("/api/stock-history");
 }
+
+export async function updateSale(id, payload) {
+  return request(`/api/sales/${id}`, {
+    method: "PUT",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload),
+  });
+}

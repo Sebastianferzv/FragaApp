@@ -69,7 +69,7 @@
     <div class="tabla-wrap" id="ventas-tabla-wrap" hidden>
       <table class="tabla">
         <thead>
-          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Precio</th><th>Comentario</th></tr>
+          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Precio</th><th>Comentario</th><th></th></tr>
         </thead>
         <tbody id="ventas-tbody"></tbody>
       </table>
@@ -235,6 +235,31 @@
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="stock-cancel">Cancelar</button>
         <button type="submit" class="btn btn-primary">Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR VENTA -->
+<div class="modal-overlay" id="venta-editar-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3>Editar venta</h3>
+      <button class="btn-icon" id="venta-editar-close" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-venta-editar">
+      <div class="field">
+        <label for="venta-editar-precio">Precio de venta (CLP)</label>
+        <input type="number" id="venta-editar-precio" min="0" step="1" required>
+      </div>
+      <div class="field">
+        <label for="venta-editar-comentario">Comentario <span id="venta-editar-comentario-req" hidden>(obligatorio: motivo de la rebaja)</span></label>
+        <input type="text" id="venta-editar-comentario" placeholder="Ej: rebaja por cliente frecuente">
+      </div>
+      <p class="form-error" id="venta-editar-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="venta-editar-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
       </div>
     </form>
   </div>

@@ -9,6 +9,7 @@ function toCamel(row) {
     precioVenta: Number(row.precio_venta),
     comentario: row.comentario,
     vendidoEn: row.vendido_en,
+    editado: row.editado,
   };
 }
 

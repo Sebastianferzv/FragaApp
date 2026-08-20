@@ -46,9 +46,11 @@ export async function ensureSchema() {
       color TEXT NOT NULL,
       precio_venta NUMERIC NOT NULL,
       comentario TEXT,
-      vendido_en TIMESTAMPTZ NOT NULL DEFAULT now()
+      vendido_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+      editado BOOLEAN NOT NULL DEFAULT false
     )
   `;
+  await sql`ALTER TABLE sales ADD COLUMN IF NOT EXISTS editado BOOLEAN NOT NULL DEFAULT false`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS stock_history (

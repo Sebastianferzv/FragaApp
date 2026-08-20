@@ -632,3 +632,26 @@ body {
 .tabla tbody tr:not(:last-child) td {
   border-bottom: 1px solid var(--azul-pastel);
 }
+
+.badge-editado {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rosado-pastel);
+  color: var(--rosado-fuerte);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--rosado-fuerte);
+}
+
+.tabla .btn-icon-square {
+  width: 30px;
+  height: 30px;
+  font-size: 0.95rem;
+}
+
+#venta-editar-comentario-req {
+  color: var(--rojo);
+  font-weight: 600;
+}
