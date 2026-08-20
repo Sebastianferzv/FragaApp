@@ -78,3 +78,7 @@ export async function updateSale(id, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export async function deleteSale(id) {
+  return request(`/api/sales/${id}`, { method: "DELETE" });
+}

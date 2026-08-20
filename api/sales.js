@@ -9,8 +9,14 @@ function toCamel(row) {
     precioVenta: Number(row.precio_venta),
     comentario: row.comentario,
     vendidoEn: row.vendido_en,
-    editado: row.editado,
+    pagado: row.pagado,
+    motivoRebaja: row.motivo_rebaja,
   };
+}
+
+function parseFecha(fecha) {
+  if (!fecha) return new Date();
+  return new Date(`${fecha}T12:00:00Z`);
 }
 
 export default async function handler(req, res) {
@@ -23,7 +29,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    const { productId, color, comentario } = req.body || {};
+    const { productId, color, comentario, fecha, pagado } = req.body || {};
     const id = Number(productId);
     const nombreColor = (color || "").trim();
 
@@ -45,8 +51,8 @@ export default async function handler(req, res) {
     }
 
     const rows = await sql`
-      INSERT INTO sales (product_id, producto_nombre, color, precio_venta, comentario)
-      VALUES (${id}, ${product.nombre}, ${nombreColor}, ${product.precio_venta}, ${comentario || null})
+      INSERT INTO sales (product_id, producto_nombre, color, precio_venta, comentario, vendido_en, pagado)
+      VALUES (${id}, ${product.nombre}, ${nombreColor}, ${product.precio_venta}, ${comentario || null}, ${parseFecha(fecha)}, ${!!pagado})
       RETURNING *
     `;
     res.status(201).json(toCamel(rows[0]));

@@ -89,11 +89,19 @@ const stockCancel = document.getElementById("stock-cancel");
 const ventaOverlay = document.getElementById("venta-overlay");
 const formVenta = document.getElementById("form-venta");
 const ventaColorSelect = document.getElementById("venta-color");
+const ventaFecha = document.getElementById("venta-fecha");
+const ventaPagado = document.getElementById("venta-pagado");
 const ventaComentario = document.getElementById("venta-comentario");
 const ventaError = document.getElementById("venta-error");
 const ventaConfirmar = document.getElementById("venta-confirmar");
 const ventaClose = document.getElementById("venta-close");
 const ventaCancel = document.getElementById("venta-cancel");
+
+function hoyLocalISO() {
+  const ahora = new Date();
+  const local = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
 
 let selectedFile = null;
 let currentFotoUrl = null;
@@ -233,6 +241,8 @@ function openVentaModal(product) {
   productoActivo = product;
   ventaError.hidden = true;
   formVenta.reset();
+  ventaFecha.value = hoyLocalISO();
+  ventaPagado.checked = false;
   const disponibles = (product.colores || []).filter((c) => c.stock > 0);
 
   if (!disponibles.length) {
@@ -431,6 +441,8 @@ export async function initProductosPanel() {
         productId: productoActivo.id,
         color: ventaColorSelect.value,
         comentario: ventaComentario.value.trim(),
+        fecha: ventaFecha.value,
+        pagado: ventaPagado.checked,
       });
       closeVentaModal();
       await renderProductos();

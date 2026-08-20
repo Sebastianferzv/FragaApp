@@ -69,7 +69,7 @@
     <div class="tabla-wrap" id="ventas-tabla-wrap" hidden>
       <table class="tabla">
         <thead>
-          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Precio</th><th>Comentario</th><th></th></tr>
+          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Precio</th><th>Pagado</th><th>Comentario</th><th></th></tr>
         </thead>
         <tbody id="ventas-tbody"></tbody>
       </table>
@@ -249,17 +249,44 @@
     </div>
     <form id="form-venta-editar">
       <div class="field">
-        <label for="venta-editar-precio">Precio de venta (CLP)</label>
-        <input type="number" id="venta-editar-precio" min="0" step="1" required>
+        <label for="venta-editar-fecha">Fecha de venta</label>
+        <input type="date" id="venta-editar-fecha" required>
       </div>
       <div class="field">
-        <label for="venta-editar-comentario">Comentario <span id="venta-editar-comentario-req" hidden>(obligatorio: motivo de la rebaja)</span></label>
-        <input type="text" id="venta-editar-comentario" placeholder="Ej: rebaja por cliente frecuente">
+        <label for="venta-editar-comentario">Comentario</label>
+        <input type="text" id="venta-editar-comentario" placeholder="Ej: venta feria, cliente Juan...">
       </div>
+      <button type="button" class="btn btn-ghost" id="btn-abrir-editar-precio">Editar precio</button>
       <p class="form-error" id="venta-editar-error" hidden></p>
       <div class="modal-actions">
+        <button type="button" class="btn btn-eliminar" id="venta-editar-eliminar">Eliminar venta</button>
         <button type="button" class="btn btn-ghost" id="venta-editar-cancel">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PRECIO -->
+<div class="modal-overlay" id="precio-editar-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3>Editar precio</h3>
+      <button class="btn-icon" id="precio-editar-close" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-precio-editar">
+      <div class="field">
+        <label for="precio-editar-nuevo">Nuevo precio (CLP)</label>
+        <input type="number" id="precio-editar-nuevo" min="0" step="1" required>
+      </div>
+      <div class="field">
+        <label for="precio-editar-motivo">Motivo de la rebaja</label>
+        <input type="text" id="precio-editar-motivo" required placeholder="Ej: cliente frecuente, producto con detalle...">
+      </div>
+      <p class="form-error" id="precio-editar-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="precio-editar-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar precio</button>
       </div>
     </form>
   </div>
@@ -276,6 +303,17 @@
       <div class="field">
         <label for="venta-color">Color</label>
         <select id="venta-color"></select>
+      </div>
+      <div class="field">
+        <label for="venta-fecha">Fecha</label>
+        <input type="date" id="venta-fecha" required>
+      </div>
+      <div class="field toggle-row">
+        <span>¿Ya está pagado?</span>
+        <label class="toggle">
+          <input type="checkbox" id="venta-pagado">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
       <div class="field">
         <label for="venta-comentario">Comentario (opcional)</label>

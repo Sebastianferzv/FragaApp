@@ -633,16 +633,12 @@ body {
   border-bottom: 1px solid var(--azul-pastel);
 }
 
-.badge-editado {
+.info-icon {
   display: inline-block;
   margin-left: 6px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--rosado-pastel);
+  cursor: help;
   color: var(--rosado-fuerte);
-  font-size: 0.72rem;
-  font-weight: 700;
-  border: 1px solid var(--rosado-fuerte);
+  font-size: 0.95rem;
 }
 
 .tabla .btn-icon-square {
@@ -651,7 +647,54 @@ body {
   font-size: 0.95rem;
 }
 
-#venta-editar-comentario-req {
-  color: var(--rojo);
-  font-weight: 600;
+/* Interruptor (toggle) */
+.toggle-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex: none;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--azul-pastel);
+  border: 2px solid var(--azul-oscuro);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  top: 2px;
+  background: white;
+  border: 2px solid var(--azul-oscuro);
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--verde-pastel);
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
 }
