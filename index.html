@@ -28,6 +28,8 @@
   </div>
   <nav class="tabs" id="tabs">
     <button class="tab-btn active" data-tab="productos">Productos</button>
+    <button class="tab-btn" data-tab="ventas">Ventas</button>
+    <button class="tab-btn" data-tab="historial">Historial de stock</button>
     <button class="tab-btn" data-tab="ajustes">Calculadora de costos</button>
   </nav>
 </header>
@@ -49,6 +51,52 @@
     </div>
 
     <div class="grid" id="productos-grid"></div>
+  </section>
+
+  <!-- PANEL VENTAS -->
+  <section class="panel" id="panel-ventas">
+    <div class="panel-header">
+      <div>
+        <h2>Ventas</h2>
+        <p class="muted">Historial de ventas registradas.</p>
+      </div>
+    </div>
+
+    <div class="empty-state" id="ventas-empty" hidden>
+      <p>Todavía no has registrado ventas.</p>
+    </div>
+
+    <div class="tabla-wrap" id="ventas-tabla-wrap" hidden>
+      <table class="tabla">
+        <thead>
+          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Precio</th><th>Comentario</th></tr>
+        </thead>
+        <tbody id="ventas-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PANEL HISTORIAL DE STOCK -->
+  <section class="panel" id="panel-historial">
+    <div class="panel-header">
+      <div>
+        <h2>Historial de stock</h2>
+        <p class="muted">Registro de cómo se fue acumulando el stock de cada color.</p>
+      </div>
+    </div>
+
+    <div class="empty-state" id="historial-empty" hidden>
+      <p>Todavía no hay movimientos de stock.</p>
+    </div>
+
+    <div class="tabla-wrap" id="historial-tabla-wrap" hidden>
+      <table class="tabla">
+        <thead>
+          <tr><th>Fecha</th><th>Producto</th><th>Color</th><th>Cantidad</th><th>Origen</th></tr>
+        </thead>
+        <tbody id="historial-tbody"></tbody>
+      </table>
+    </div>
   </section>
 
   <!-- PANEL AJUSTES / CALCULADORA -->
@@ -133,8 +181,9 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="colores-crear-wrapper">
         <label>Colores disponibles</label>
+        <p class="muted">Los colores y sus cantidades solo se definen al crear el producto. Después, usa "Agregar stock" desde la tarjeta.</p>
         <div class="color-input-row">
           <input type="text" id="color-nombre" placeholder="Nombre del color">
           <input type="number" id="color-stock" placeholder="Unidades" min="0" step="1">
@@ -162,6 +211,57 @@
       <button class="btn-icon" id="detalle-close" aria-label="Cerrar">×</button>
     </div>
     <div class="desglose" id="detalle-desglose"></div>
+  </div>
+</div>
+
+<!-- MODAL AGREGAR STOCK -->
+<div class="modal-overlay" id="stock-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3 id="stock-title">Agregar stock</h3>
+      <button class="btn-icon" id="stock-close" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-stock">
+      <div class="field">
+        <label for="stock-color">Color</label>
+        <input type="text" id="stock-color" list="stock-colores-datalist" required placeholder="Color existente o uno nuevo">
+        <datalist id="stock-colores-datalist"></datalist>
+      </div>
+      <div class="field">
+        <label for="stock-cantidad">Cantidad a agregar</label>
+        <input type="number" id="stock-cantidad" min="1" step="1" required>
+      </div>
+      <p class="form-error" id="stock-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="stock-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL VENDER -->
+<div class="modal-overlay" id="venta-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3 id="venta-title">Vender</h3>
+      <button class="btn-icon" id="venta-close" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-venta">
+      <div class="field">
+        <label for="venta-color">Color</label>
+        <select id="venta-color"></select>
+      </div>
+      <div class="field">
+        <label for="venta-comentario">Comentario (opcional)</label>
+        <input type="text" id="venta-comentario" placeholder="Ej: venta feria, cliente Juan...">
+      </div>
+      <p class="form-error" id="venta-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="venta-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="venta-confirmar">Confirmar venta</button>
+      </div>
+    </form>
   </div>
 </div>
 

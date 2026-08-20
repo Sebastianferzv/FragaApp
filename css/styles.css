@@ -353,20 +353,50 @@ body {
 
 .producto-actions {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-top: auto;
   padding-top: 8px;
 }
 
-.producto-actions .btn {
-  flex: 1;
-  padding: 8px 10px;
-  font-size: 0.82rem;
+.producto-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon-square {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  border: 3px solid var(--azul-oscuro);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--tinta);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--azul-oscuro);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn-icon-square:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--azul-oscuro);
+}
+
+.btn-vender {
+  width: 100%;
   box-shadow: 3px 3px 0 var(--azul-oscuro);
 }
 
-.producto-actions .btn:active {
+.btn-vender:active {
   box-shadow: 1px 1px 0 var(--azul-oscuro);
+}
+
+.btn-vender:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-eliminar {
@@ -389,7 +419,8 @@ body {
   color: var(--tinta-suave);
 }
 
-.field input {
+.field input,
+.field select {
   border: 2px solid var(--azul-oscuro);
   border-radius: 10px;
   padding: 10px 12px;
@@ -397,9 +428,11 @@ body {
   font-family: var(--font-body);
   background: var(--crema);
   color: var(--tinta);
+  width: 100%;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: 3px solid var(--rosado);
   outline-offset: 1px;
   background: white;
@@ -565,4 +598,37 @@ body {
 
 .save-confirm.error {
   color: var(--rojo);
+}
+
+/* Tablas (Ventas / Historial de stock) */
+.tabla-wrap {
+  background: var(--card);
+  border: 3px solid var(--azul-oscuro);
+  border-radius: var(--radio);
+  overflow-x: auto;
+  box-shadow: 6px 6px 0 var(--azul-pastel);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+.tabla th {
+  font-family: var(--font-display);
+  background: var(--crema);
+  color: var(--tinta);
+  border-bottom: 3px solid var(--azul-oscuro);
+}
+
+.tabla tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--azul-pastel);
 }

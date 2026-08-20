@@ -46,3 +46,27 @@ export async function updateProduct(id, product) {
 export async function deleteProduct(id) {
   return request(`/api/products/${id}`, { method: "DELETE" });
 }
+
+export async function addStock(productId, payload) {
+  return request(`/api/products/${productId}/stock`, {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getSales() {
+  return request("/api/sales");
+}
+
+export async function createSale(payload) {
+  return request("/api/sales", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getStockHistory() {
+  return request("/api/stock-history");
+}

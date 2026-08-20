@@ -1,4 +1,4 @@
-import { sql, ensureSchema, getAllProductColors, replaceProductColors } from "../_lib/db.js";
+import { sql, ensureSchema, getAllProductColors, replaceProductColors, logStockHistory } from "../_lib/db.js";
 
 function toCamel(row, colores = []) {
   return {
@@ -43,6 +43,12 @@ export default async function handler(req, res) {
     `;
     const product = rows[0];
     await replaceProductColors(product.id, colores);
+    for (const item of Array.isArray(colores) ? colores : []) {
+      const color = (item?.color || "").trim();
+      if (!color) continue;
+      const stock = Math.max(0, Math.trunc(Number(item?.stock) || 0));
+      await logStockHistory(product.id, product.nombre, color, stock, "creacion");
+    }
     const colorRows = await sql`SELECT id, color, stock FROM product_colors WHERE product_id = ${product.id} ORDER BY id ASC`;
     res.status(201).json(toCamel(product, colorRows));
     return;
