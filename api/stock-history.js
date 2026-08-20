@@ -15,11 +15,18 @@ function toCamel(row) {
 export default async function handler(req, res) {
   await ensureSchema();
 
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Metodo no permitido" });
+  if (req.method === "GET") {
+    const rows = await sql`SELECT * FROM stock_history ORDER BY registrado_en DESC`;
+    res.status(200).json(rows.map(toCamel));
     return;
   }
 
-  const rows = await sql`SELECT * FROM stock_history ORDER BY registrado_en DESC`;
-  res.status(200).json(rows.map(toCamel));
+  if (req.method === "DELETE") {
+    const id = Number(req.query.id);
+    if (Number.isInteger(id)) await sql`DELETE FROM stock_history WHERE id = ${id}`;
+    res.status(204).end();
+    return;
+  }
+
+  res.status(405).json({ error: "Metodo no permitido" });
 }
