@@ -52,12 +52,5 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method === "DELETE") {
-    const id = Number(req.query.id);
-    if (Number.isInteger(id)) await sql`DELETE FROM sales WHERE id = ${id}`;
-    res.status(204).end();
-    return;
-  }
-
   res.status(405).json({ error: "Metodo no permitido" });
 }
