@@ -1,6 +1,6 @@
-import { sql, ensureSchema } from "../_lib/db.js";
+import { sql, ensureSchema, replaceProductColors } from "../_lib/db.js";
 
-function toCamel(row) {
+function toCamel(row, colores = []) {
   return {
     id: row.id,
     nombre: row.nombre,
@@ -9,6 +9,7 @@ function toCamel(row) {
     gramosFilamento: Number(row.gramos_filamento),
     horas: Number(row.horas),
     creadoEn: row.creado_en,
+    colores: colores.map((c) => ({ id: c.id, color: c.color, stock: c.stock })),
   };
 }
 
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas } = req.body || {};
+    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas, colores } = req.body || {};
     const rows = await sql`
       UPDATE products SET
         nombre = ${nombre},
@@ -37,7 +38,9 @@ export default async function handler(req, res) {
       res.status(404).json({ error: "Producto no encontrado" });
       return;
     }
-    res.status(200).json(toCamel(rows[0]));
+    await replaceProductColors(id, colores);
+    const colorRows = await sql`SELECT id, color, stock FROM product_colors WHERE product_id = ${id} ORDER BY id ASC`;
+    res.status(200).json(toCamel(rows[0], colorRows));
     return;
   }
 

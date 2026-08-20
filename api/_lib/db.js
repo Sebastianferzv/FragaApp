@@ -29,5 +29,29 @@ export async function ensureSchema() {
     )
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS product_colors (
+      id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) PRIMARY KEY,
+      product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      color TEXT NOT NULL,
+      stock INTEGER NOT NULL DEFAULT 0
+    )
+  `;
+
   schemaReady = true;
+}
+
+export async function getAllProductColors() {
+  return sql`SELECT id, product_id, color, stock FROM product_colors ORDER BY id ASC`;
+}
+
+export async function replaceProductColors(productId, colores) {
+  await sql`DELETE FROM product_colors WHERE product_id = ${productId}`;
+
+  for (const item of Array.isArray(colores) ? colores : []) {
+    const color = (item?.color || "").trim();
+    if (!color) continue;
+    const stock = Math.max(0, Math.trunc(Number(item?.stock) || 0));
+    await sql`INSERT INTO product_colors (product_id, color, stock) VALUES (${productId}, ${color}, ${stock})`;
+  }
 }

@@ -334,6 +334,23 @@ body {
 .badge-positivo { background: var(--verde-pastel); color: #15803D; }
 .badge-negativo { background: var(--rojo-pastel); color: var(--rojo); }
 
+.color-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.color-chip {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--azul-pastel);
+  color: var(--azul-oscuro);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--azul-oscuro);
+}
+
 .producto-actions {
   display: flex;
   gap: 8px;
@@ -397,6 +414,40 @@ body {
 .field-row input {
   width: 100%;
   min-width: 0;
+}
+
+.color-input-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 8px;
+}
+
+.color-input-row input {
+  width: 100%;
+  min-width: 0;
+}
+
+.colores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--crema);
+  border: 2px solid var(--azul-oscuro);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.88rem;
+}
+
+.color-row-remove {
+  font-size: 1.1rem;
 }
 
 .ajustes-layout {
@@ -490,6 +541,10 @@ body {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 8px;
+}
+
+#producto-eliminar {
+  margin-right: auto;
 }
 
 .foto-preview {

@@ -56,19 +56,70 @@ const inputGramos = document.getElementById("producto-gramos");
 const inputHoras = document.getElementById("producto-horas");
 const productoDesglose = document.getElementById("producto-desglose");
 const productoError = document.getElementById("producto-error");
+const btnEliminar = document.getElementById("producto-eliminar");
+
+const inputColorNombre = document.getElementById("color-nombre");
+const inputColorStock = document.getElementById("color-stock");
+const btnAgregarColor = document.getElementById("btn-agregar-color");
+const coloresList = document.getElementById("colores-list");
+
+const detalleOverlay = document.getElementById("detalle-overlay");
+const detalleTitle = document.getElementById("detalle-title");
+const detalleDesglose = document.getElementById("detalle-desglose");
+const detalleClose = document.getElementById("detalle-close");
 
 let selectedFile = null;
 let currentFotoUrl = null;
 let cachedSettings = null;
+let pendingColores = [];
 
 async function refreshSettingsCache() {
   cachedSettings = await getSettings();
+}
+
+function renderColoresList() {
+  coloresList.innerHTML = pendingColores
+    .map(
+      (c, i) => `
+        <div class="color-row">
+          <span>${c.color} — ${c.stock} unidades</span>
+          <button type="button" class="btn-icon color-row-remove" data-index="${i}" aria-label="Quitar">×</button>
+        </div>
+      `
+    )
+    .join("");
+
+  coloresList.querySelectorAll(".color-row-remove").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pendingColores.splice(Number(btn.dataset.index), 1);
+      renderColoresList();
+    });
+  });
+}
+
+function agregarColor() {
+  const nombre = inputColorNombre.value.trim();
+  const stock = Math.max(0, Math.trunc(Number(inputColorStock.value) || 0));
+  if (!nombre) return;
+
+  const existente = pendingColores.find((c) => c.color.toLowerCase() === nombre.toLowerCase());
+  if (existente) {
+    existente.stock = stock;
+  } else {
+    pendingColores.push({ color: nombre, stock });
+  }
+
+  inputColorNombre.value = "";
+  inputColorStock.value = "";
+  inputColorNombre.focus();
+  renderColoresList();
 }
 
 function openModal(product = null) {
   form.reset();
   selectedFile = null;
   currentFotoUrl = product?.fotoUrl || null;
+  pendingColores = product?.colores ? product.colores.map((c) => ({ color: c.color, stock: c.stock })) : [];
   inputId.value = product?.id ?? "";
   inputNombre.value = product?.nombre || "";
   inputPrecio.value = product?.precioVenta ?? "";
@@ -76,6 +127,7 @@ function openModal(product = null) {
   inputHoras.value = product?.horas ?? "";
   modalTitle.textContent = product ? "Editar producto" : "Nuevo producto";
   productoError.hidden = true;
+  btnEliminar.hidden = !product;
 
   if (currentFotoUrl) {
     fotoPreview.src = currentFotoUrl;
@@ -84,6 +136,7 @@ function openModal(product = null) {
     fotoPreview.hidden = true;
   }
 
+  renderColoresList();
   updateDesglosePreview();
   overlay.hidden = false;
 }
@@ -111,6 +164,27 @@ function updateDesglosePreview() {
   `;
 }
 
+function openDetalleModal(product) {
+  const { costoFilamento, costoLuz, costoDesgaste, costoTotal } = calcularCosto(
+    { gramos: product.gramosFilamento, horas: product.horas },
+    cachedSettings
+  );
+  const { margen, margenPct } = calcularMargen(product.precioVenta, costoTotal);
+  detalleTitle.textContent = `Detalles — ${product.nombre}`;
+  detalleDesglose.innerHTML = `
+    <div class="desglose-row"><span>Costo filamento</span><span>${formatCLP(costoFilamento)}</span></div>
+    <div class="desglose-row"><span>Costo luz</span><span>${formatCLP(costoLuz)}</span></div>
+    <div class="desglose-row"><span>Costo desgaste</span><span>${formatCLP(costoDesgaste)}</span></div>
+    <div class="desglose-row total"><span>Costo total</span><span>${formatCLP(costoTotal)}</span></div>
+    <div class="desglose-row"><span>Margen</span><span>${formatCLP(margen)} (${formatPct(margenPct)})</span></div>
+  `;
+  detalleOverlay.hidden = false;
+}
+
+function closeDetalleModal() {
+  detalleOverlay.hidden = true;
+}
+
 async function renderProductos() {
   await refreshSettingsCache();
   const products = await getProducts();
@@ -119,13 +193,7 @@ async function renderProductos() {
   grid.innerHTML = "";
 
   products.forEach((product) => {
-    const { costoTotal } = calcularCosto(
-      { gramos: product.gramosFilamento, horas: product.horas },
-      cachedSettings
-    );
-    const { margen, margenPct } = calcularMargen(product.precioVenta, costoTotal);
-    const esPositivo = margen >= 0;
-
+    const colores = product.colores || [];
     const card = document.createElement("article");
     card.className = "producto-card";
     card.innerHTML = `
@@ -137,30 +205,22 @@ async function renderProductos() {
       <div class="producto-body">
         <p class="producto-nombre">${product.nombre}</p>
         <p class="producto-precio">${formatCLP(product.precioVenta)}</p>
-        <div class="producto-stats">
-          <span>Costo de creación: ${formatCLP(costoTotal)}</span>
-          <span>${product.gramosFilamento} g · ${product.horas} h</span>
+        <div class="color-chips">
+          ${
+            colores.length
+              ? colores.map((c) => `<span class="color-chip">${c.color}: ${c.stock}</span>`).join("")
+              : `<span class="muted">Sin colores registrados</span>`
+          }
         </div>
-        <span class="badge ${esPositivo ? "badge-positivo" : "badge-negativo"}">
-          Margen: ${formatCLP(margen)} (${formatPct(margenPct)})
-        </span>
         <div class="producto-actions">
-          <button class="btn btn-ghost btn-editar">Editar</button>
-          <button class="btn btn-eliminar">Eliminar</button>
+          <button class="btn btn-ghost btn-detalles">Detalles</button>
+          <button class="btn btn-primary btn-editar">Editar</button>
         </div>
       </div>
     `;
 
+    card.querySelector(".btn-detalles").addEventListener("click", () => openDetalleModal(product));
     card.querySelector(".btn-editar").addEventListener("click", () => openModal(product));
-    card.querySelector(".btn-eliminar").addEventListener("click", async () => {
-      if (!confirm(`¿Eliminar "${product.nombre}"?`)) return;
-      try {
-        await deleteProduct(product.id);
-        await renderProductos();
-      } catch (err) {
-        alert("No se pudo eliminar el producto: " + err.message);
-      }
-    });
 
     grid.appendChild(card);
   });
@@ -172,6 +232,27 @@ export async function initProductosPanel() {
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeModal();
+  });
+
+  detalleClose.addEventListener("click", closeDetalleModal);
+  detalleOverlay.addEventListener("click", (e) => {
+    if (e.target === detalleOverlay) closeDetalleModal();
+  });
+
+  btnAgregarColor.addEventListener("click", agregarColor);
+
+  btnEliminar.addEventListener("click", async () => {
+    const id = Number(inputId.value);
+    if (!id) return;
+    if (!confirm(`¿Eliminar "${inputNombre.value}"?`)) return;
+    try {
+      await deleteProduct(id);
+      closeModal();
+      await renderProductos();
+    } catch (err) {
+      productoError.textContent = "No se pudo eliminar: " + err.message;
+      productoError.hidden = false;
+    }
   });
 
   inputFoto.addEventListener("change", () => {
@@ -210,6 +291,7 @@ export async function initProductosPanel() {
         precioVenta: Number(inputPrecio.value) || 0,
         gramosFilamento: Number(inputGramos.value) || 0,
         horas: Number(inputHoras.value) || 0,
+        colores: pendingColores,
       };
 
       if (inputId.value) {

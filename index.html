@@ -132,13 +132,36 @@
           <input type="number" id="producto-horas" min="0" step="0.1" required>
         </div>
       </div>
+
+      <div class="field">
+        <label>Colores disponibles</label>
+        <div class="color-input-row">
+          <input type="text" id="color-nombre" placeholder="Nombre del color">
+          <input type="number" id="color-stock" placeholder="Unidades" min="0" step="1">
+          <button type="button" class="btn btn-ghost" id="btn-agregar-color">Agregar</button>
+        </div>
+        <div class="colores-list" id="colores-list"></div>
+      </div>
+
       <div class="desglose" id="producto-desglose"></div>
       <p class="form-error" id="producto-error" hidden></p>
       <div class="modal-actions">
+        <button type="button" class="btn btn-eliminar" id="producto-eliminar" hidden>Eliminar</button>
         <button type="button" class="btn btn-ghost" id="modal-cancel">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar producto</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- MODAL DETALLES -->
+<div class="modal-overlay" id="detalle-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3 id="detalle-title">Detalles</h3>
+      <button class="btn-icon" id="detalle-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="desglose" id="detalle-desglose"></div>
   </div>
 </div>
 
