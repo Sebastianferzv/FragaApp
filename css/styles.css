@@ -150,6 +150,7 @@ body {
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   background: var(--crema);
   padding: 5px;
@@ -157,13 +158,6 @@ body {
   border: 2px solid var(--azul-oscuro);
   margin-right: 50px;
   max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tab-btn {
@@ -177,8 +171,6 @@ body {
   color: var(--tinta-suave);
   cursor: pointer;
   transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .tab-btn:hover { color: var(--tinta); }
@@ -522,6 +514,19 @@ body {
 @media (max-width: 760px) {
   .ajustes-layout { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; }
+
+  .tabs {
+    margin-right: 0;
+    border-radius: 16px;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    flex: 1 1 42%;
+    padding: 8px 6px;
+    font-size: 0.78rem;
+    text-align: center;
+  }
 }
 
 .save-confirm {

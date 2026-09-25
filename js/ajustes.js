@@ -1,16 +1,28 @@
 import { getSettings, saveSettings } from "./storage.js";
-import { calcularCosto, formatCLP } from "./calculator.js";
+import { calcularCosto, calcularMargen, calcularGananciaNetaIva, formatCLP, formatPct } from "./calculator.js";
 
-function renderDesglose(container, gramos, horas, settings) {
+function renderDesglose(container, gramos, horas, precioVenta, settings) {
   const { costoFilamento, costoLuz, costoDesgaste, costoTotal } = calcularCosto(
     { gramos, horas },
     settings
   );
+
+  let extra = "";
+  if (precioVenta > 0) {
+    const { margen, margenPct } = calcularMargen(precioVenta, costoTotal);
+    const { gananciaNeta, gananciaNetaPct } = calcularGananciaNetaIva(precioVenta, costoTotal, settings.ivaPct);
+    extra = `
+      <div class="desglose-row"><span>Margen</span><span>${formatCLP(margen)} (${formatPct(margenPct)})</span></div>
+      <div class="desglose-row"><span>Ganancia menos IVA</span><span>${formatCLP(gananciaNeta)} (${formatPct(gananciaNetaPct)})</span></div>
+    `;
+  }
+
   container.innerHTML = `
     <div class="desglose-row"><span>Costo filamento</span><span>${formatCLP(costoFilamento)}</span></div>
     <div class="desglose-row"><span>Costo luz</span><span>${formatCLP(costoLuz)}</span></div>
     <div class="desglose-row"><span>Costo desgaste</span><span>${formatCLP(costoDesgaste)}</span></div>
     <div class="desglose-row total"><span>Costo total</span><span>${formatCLP(costoTotal)}</span></div>
+    ${extra}
   `;
 }
 
@@ -27,6 +39,7 @@ export async function initAjustesPanel(onSettingsChanged) {
 
   const simGramos = document.getElementById("sim-gramos");
   const simHoras = document.getElementById("sim-horas");
+  const simPrecio = document.getElementById("sim-precio");
   const simDesglose = document.getElementById("sim-desglose");
 
   let currentSettings = await getSettings();
@@ -42,7 +55,8 @@ export async function initAjustesPanel(onSettingsChanged) {
   function updateSimulador() {
     const gramos = Number(simGramos.value) || 0;
     const horas = Number(simHoras.value) || 0;
-    renderDesglose(simDesglose, gramos, horas, currentSettings);
+    const precioVenta = Number(simPrecio.value) || 0;
+    renderDesglose(simDesglose, gramos, horas, precioVenta, currentSettings);
   }
 
   form.addEventListener("submit", async (e) => {
@@ -72,6 +86,7 @@ export async function initAjustesPanel(onSettingsChanged) {
 
   simGramos.addEventListener("input", updateSimulador);
   simHoras.addEventListener("input", updateSimulador);
+  simPrecio.addEventListener("input", updateSimulador);
 
   loadIntoForm();
   updateSimulador();
