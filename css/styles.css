@@ -21,13 +21,23 @@
 
 * { box-sizing: border-box; }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
+  width: 100%;
   margin: 0;
+  overflow-x: hidden;
   font-family: var(--font-body);
   background: var(--crema);
   color: var(--tinta);
   position: relative;
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
 }
 
 /* Formas Memphis flotando de fondo */
