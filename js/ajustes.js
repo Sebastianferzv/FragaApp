@@ -22,6 +22,7 @@ export async function initAjustesPanel(onSettingsChanged) {
     consumoKw: document.getElementById("consumoKw"),
     precioKwh: document.getElementById("precioKwh"),
     desgastePorHora: document.getElementById("desgastePorHora"),
+    ivaPct: document.getElementById("ivaPct"),
   };
 
   const simGramos = document.getElementById("sim-gramos");
@@ -35,6 +36,7 @@ export async function initAjustesPanel(onSettingsChanged) {
     inputs.consumoKw.value = currentSettings.consumoKw;
     inputs.precioKwh.value = currentSettings.precioKwh;
     inputs.desgastePorHora.value = currentSettings.desgastePorHora;
+    inputs.ivaPct.value = currentSettings.ivaPct;
   }
 
   function updateSimulador() {
@@ -50,6 +52,7 @@ export async function initAjustesPanel(onSettingsChanged) {
       consumoKw: Number(inputs.consumoKw.value) || 0,
       precioKwh: Number(inputs.precioKwh.value) || 0,
       desgastePorHora: Number(inputs.desgastePorHora.value) || 0,
+      ivaPct: Number(inputs.ivaPct.value) || 0,
     };
 
     try {

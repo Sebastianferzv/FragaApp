@@ -7,7 +7,7 @@ import {
   addStock,
   createSale,
 } from "./storage.js";
-import { calcularCosto, calcularMargen, formatCLP, formatPct } from "./calculator.js";
+import { calcularCosto, calcularMargen, calcularGananciaNetaIva, formatCLP, formatPct } from "./calculator.js";
 import JsBarcode from "https://esm.sh/jsbarcode@3.11.6";
 
 const MAX_DIMENSION = 1600;
@@ -220,12 +220,14 @@ function updateDesglosePreview() {
     cachedSettings
   );
   const { margen, margenPct } = calcularMargen(precioVenta, costoTotal);
+  const { gananciaNeta, gananciaNetaPct } = calcularGananciaNetaIva(precioVenta, costoTotal, cachedSettings.ivaPct);
   productoDesglose.innerHTML = `
     <div class="desglose-row"><span>Costo filamento</span><span>${formatCLP(costoFilamento)}</span></div>
     <div class="desglose-row"><span>Costo luz</span><span>${formatCLP(costoLuz)}</span></div>
     <div class="desglose-row"><span>Costo desgaste</span><span>${formatCLP(costoDesgaste)}</span></div>
     <div class="desglose-row total"><span>Costo total</span><span>${formatCLP(costoTotal)}</span></div>
     <div class="desglose-row"><span>Margen</span><span>${formatCLP(margen)} (${formatPct(margenPct)})</span></div>
+    <div class="desglose-row"><span>Ganancia menos IVA</span><span>${formatCLP(gananciaNeta)} (${formatPct(gananciaNetaPct)})</span></div>
   `;
 }
 
@@ -243,12 +245,14 @@ function openDetalleModal(product) {
     cachedSettings
   );
   const { margen, margenPct } = calcularMargen(product.precioVenta, costoTotal);
+  const { gananciaNeta, gananciaNetaPct } = calcularGananciaNetaIva(product.precioVenta, costoTotal, cachedSettings.ivaPct);
   detalleDesglose.innerHTML = `
     <div class="desglose-row"><span>Costo filamento</span><span>${formatCLP(costoFilamento)}</span></div>
     <div class="desglose-row"><span>Costo luz</span><span>${formatCLP(costoLuz)}</span></div>
     <div class="desglose-row"><span>Costo desgaste</span><span>${formatCLP(costoDesgaste)}</span></div>
     <div class="desglose-row total"><span>Costo total</span><span>${formatCLP(costoTotal)}</span></div>
     <div class="desglose-row"><span>Margen</span><span>${formatCLP(margen)} (${formatPct(margenPct)})</span></div>
+    <div class="desglose-row"><span>Ganancia menos IVA</span><span>${formatCLP(gananciaNeta)} (${formatPct(gananciaNetaPct)})</span></div>
   `;
   detalleOverlay.hidden = false;
 }

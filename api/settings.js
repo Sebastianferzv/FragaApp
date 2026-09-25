@@ -6,6 +6,7 @@ function toCamel(row) {
     consumoKw: Number(row.consumo_kw),
     precioKwh: Number(row.precio_kwh),
     desgastePorHora: Number(row.desgaste_por_hora),
+    ivaPct: Number(row.iva_pct),
   };
 }
 
@@ -20,15 +21,16 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { precioKiloFilamento, consumoKw, precioKwh, desgastePorHora } = req.body || {};
+    const { precioKiloFilamento, consumoKw, precioKwh, desgastePorHora, ivaPct } = req.body || {};
     const rows = await sql`
-      INSERT INTO settings (id, precio_kilo_filamento, consumo_kw, precio_kwh, desgaste_por_hora)
-      VALUES (1, ${precioKiloFilamento || 0}, ${consumoKw || 0}, ${precioKwh || 0}, ${desgastePorHora || 0})
+      INSERT INTO settings (id, precio_kilo_filamento, consumo_kw, precio_kwh, desgaste_por_hora, iva_pct)
+      VALUES (1, ${precioKiloFilamento || 0}, ${consumoKw || 0}, ${precioKwh || 0}, ${desgastePorHora || 0}, ${ivaPct ?? 19})
       ON CONFLICT (id) DO UPDATE SET
         precio_kilo_filamento = EXCLUDED.precio_kilo_filamento,
         consumo_kw = EXCLUDED.consumo_kw,
         precio_kwh = EXCLUDED.precio_kwh,
-        desgaste_por_hora = EXCLUDED.desgaste_por_hora
+        desgaste_por_hora = EXCLUDED.desgaste_por_hora,
+        iva_pct = EXCLUDED.iva_pct
       RETURNING *
     `;
     res.status(200).json(toCamel(rows[0]));

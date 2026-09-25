@@ -12,6 +12,13 @@ export function calcularMargen(precioVenta, costoTotal) {
   return { margen, margenPct };
 }
 
+export function calcularGananciaNetaIva(precioVenta, costoTotal, ivaPct) {
+  const precioNeto = precioVenta / (1 + (ivaPct || 0) / 100);
+  const gananciaNeta = precioNeto - costoTotal;
+  const gananciaNetaPct = precioVenta > 0 ? (gananciaNeta / precioVenta) * 100 : 0;
+  return { gananciaNeta, gananciaNetaPct };
+}
+
 const CLP_FORMAT = new Intl.NumberFormat("es-CL", {
   style: "currency",
   currency: "CLP",

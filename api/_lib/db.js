@@ -13,9 +13,11 @@ export async function ensureSchema() {
       precio_kilo_filamento NUMERIC NOT NULL DEFAULT 0,
       consumo_kw NUMERIC NOT NULL DEFAULT 0,
       precio_kwh NUMERIC NOT NULL DEFAULT 0,
-      desgaste_por_hora NUMERIC NOT NULL DEFAULT 100
+      desgaste_por_hora NUMERIC NOT NULL DEFAULT 100,
+      iva_pct NUMERIC NOT NULL DEFAULT 19
     )
   `;
+  await sql`ALTER TABLE settings ADD COLUMN IF NOT EXISTS iva_pct NUMERIC NOT NULL DEFAULT 19`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS products (
