@@ -733,3 +733,8 @@ body {
   background: white;
   border-radius: 10px;
 }
+
+.btn-barcode-download {
+  width: 100%;
+  margin-top: 12px;
+}

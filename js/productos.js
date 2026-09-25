@@ -105,6 +105,43 @@ const barcodeTitle = document.getElementById("barcode-title");
 const barcodeSvg = document.getElementById("barcode-svg");
 const barcodeMensaje = document.getElementById("barcode-mensaje");
 const barcodeClose = document.getElementById("barcode-close");
+const barcodeDownload = document.getElementById("barcode-download");
+
+let codigoActivo = null;
+
+function descargarBarcodeComoJpg() {
+  if (!codigoActivo) return;
+
+  const svgData = new XMLSerializer().serializeToString(barcodeSvg);
+  const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const svgUrl = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const escala = 3;
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width * escala;
+    canvas.height = img.height * escala;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(escala, escala);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(svgUrl);
+
+    canvas.toBlob((jpgBlob) => {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(jpgBlob);
+      link.download = `${codigoActivo}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    }, "image/jpeg", 0.95);
+  };
+  img.src = svgUrl;
+}
 
 function toBarcodeSafe(text) {
   return (text || "")
@@ -329,14 +366,17 @@ function puedeCalcularCosto(product) {
 
 function openBarcodeModal(product) {
   const codigo = calcularCodigo(product);
+  codigoActivo = codigo;
   barcodeTitle.textContent = `Código de barras — ${product.nombre}`;
 
   if (!codigo) {
     barcodeSvg.innerHTML = "";
     barcodeMensaje.textContent = "Este producto todavía no tiene descriptor. Edítalo para agregarlo y generar su código de barras.";
     barcodeMensaje.hidden = false;
+    barcodeDownload.hidden = true;
   } else {
     barcodeMensaje.hidden = true;
+    barcodeDownload.hidden = false;
     JsBarcode(barcodeSvg, codigo, {
       format: "CODE128",
       lineColor: "#000000",
@@ -440,6 +480,7 @@ export async function initProductosPanel() {
   barcodeOverlay.addEventListener("click", (e) => {
     if (e.target === barcodeOverlay) closeBarcodeModal();
   });
+  barcodeDownload.addEventListener("click", descargarBarcodeComoJpg);
 
   btnAgregarColor.addEventListener("click", agregarColor);
 
