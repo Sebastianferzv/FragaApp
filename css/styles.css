@@ -597,6 +597,17 @@ body {
   box-shadow: 8px 8px 0 var(--rosado);
 }
 
+.confirm-modal {
+  max-width: 380px;
+}
+
+.confirm-message {
+  color: var(--tinta);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

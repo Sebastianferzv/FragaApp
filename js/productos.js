@@ -10,6 +10,7 @@ import {
 import { calcularCosto, calcularMargen, calcularGananciaNetaIva, formatCLP, formatPct } from "./calculator.js";
 import JsBarcode from "https://esm.sh/jsbarcode@3.11.6";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
+import { confirmarAccion } from "./confirmModal.js";
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
@@ -490,10 +491,13 @@ async function renderProductos() {
 
 export async function initProductosPanel() {
   document.getElementById("btn-nuevo-producto").addEventListener("click", () => openModal());
-  document.getElementById("btn-exportar-excel").addEventListener("click", () => {
-    if (confirm("¿Descargar el Excel con el inventario actual?")) {
-      descargarExcel();
-    }
+  document.getElementById("btn-exportar-excel").addEventListener("click", async () => {
+    const confirmado = await confirmarAccion({
+      titulo: "Descargar inventario",
+      mensaje: "¿Quieres descargar el Excel con el inventario actual?",
+      textoConfirmar: "Descargar",
+    });
+    if (confirmado) descargarExcel();
   });
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
