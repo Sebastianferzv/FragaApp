@@ -234,8 +234,8 @@ function updateDesglosePreview() {
 function openDetalleModal(product) {
   detalleTitle.textContent = `Detalles — ${product.nombre}`;
 
-  if (!esProductoCompleto(product)) {
-    detalleDesglose.innerHTML = `<p class="muted">Falta completar foto, precio, gramos y/u horas para calcular el costo y el margen.</p>`;
+  if (!puedeCalcularCosto(product)) {
+    detalleDesglose.innerHTML = `<p class="muted">Falta completar precio, gramos y/u horas para calcular el costo y el margen.</p>`;
     detalleOverlay.hidden = false;
     return;
   }
@@ -321,6 +321,10 @@ function esProductoCompleto(product) {
       product.horas > 0 &&
       product.descriptor
   );
+}
+
+function puedeCalcularCosto(product) {
+  return Boolean(product.precioVenta > 0 && product.gramosFilamento > 0 && product.horas > 0);
 }
 
 function openBarcodeModal(product) {

@@ -27,6 +27,7 @@ body {
   background: var(--crema);
   color: var(--tinta);
   position: relative;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Formas Memphis flotando de fondo */
