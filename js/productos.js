@@ -490,7 +490,11 @@ async function renderProductos() {
 
 export async function initProductosPanel() {
   document.getElementById("btn-nuevo-producto").addEventListener("click", () => openModal());
-  document.getElementById("btn-exportar-excel").addEventListener("click", () => descargarExcel());
+  document.getElementById("btn-exportar-excel").addEventListener("click", () => {
+    if (confirm("¿Descargar el Excel con el inventario actual?")) {
+      descargarExcel();
+    }
+  });
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
   overlay.addEventListener("click", (e) => {
