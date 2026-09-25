@@ -9,6 +9,7 @@ import {
 } from "./storage.js";
 import { calcularCosto, calcularMargen, calcularGananciaNetaIva, formatCLP, formatPct } from "./calculator.js";
 import JsBarcode from "https://esm.sh/jsbarcode@3.11.6";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
@@ -153,6 +154,42 @@ function toBarcodeSafe(text) {
 function calcularCodigo(product) {
   if (!product.nombre || !product.descriptor) return null;
   return `FR-${toBarcodeSafe(product.nombre)}-${toBarcodeSafe(product.descriptor)}`;
+}
+
+async function descargarExcel() {
+  const products = await getProducts();
+
+  const filas = [["Nombre del producto", "Color", "Cantidad", "Código", "Precio"]];
+  products.forEach((product) => {
+    const codigo = calcularCodigo(product) || "";
+    const precio = product.precioVenta ?? "";
+    const colores = product.colores || [];
+
+    if (colores.length) {
+      colores.forEach((c) => {
+        filas.push([product.nombre, c.color, c.stock, codigo, precio]);
+      });
+    } else {
+      filas.push([product.nombre, "", "", codigo, precio]);
+    }
+  });
+
+  const worksheet = XLSX.utils.aoa_to_sheet(filas);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario");
+  const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  const fecha = hoyLocalISO();
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `fragapp-inventario-${fecha}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
 }
 
 function hoyLocalISO() {
@@ -453,6 +490,7 @@ async function renderProductos() {
 
 export async function initProductosPanel() {
   document.getElementById("btn-nuevo-producto").addEventListener("click", () => openModal());
+  document.getElementById("btn-exportar-excel").addEventListener("click", () => descargarExcel());
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
   overlay.addEventListener("click", (e) => {
