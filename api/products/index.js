@@ -12,6 +12,7 @@ function toCamel(row, colores = []) {
     precioVenta: numOrNull(row.precio_venta),
     gramosFilamento: numOrNull(row.gramos_filamento),
     horas: numOrNull(row.horas),
+    descriptor: row.descriptor,
     creadoEn: row.creado_en,
     colores: colores.map((c) => ({ id: c.id, color: c.color, stock: c.stock })),
   };
@@ -35,14 +36,14 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas, colores } = req.body || {};
+    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas, descriptor, colores } = req.body || {};
     if (!nombre) {
       res.status(400).json({ error: "Falta el nombre del producto" });
       return;
     }
     const rows = await sql`
-      INSERT INTO products (nombre, foto_url, precio_venta, gramos_filamento, horas)
-      VALUES (${nombre}, ${fotoUrl || null}, ${numOrNull(precioVenta)}, ${numOrNull(gramosFilamento)}, ${numOrNull(horas)})
+      INSERT INTO products (nombre, foto_url, precio_venta, gramos_filamento, horas, descriptor)
+      VALUES (${nombre}, ${fotoUrl || null}, ${numOrNull(precioVenta)}, ${numOrNull(gramosFilamento)}, ${numOrNull(horas)}, ${(descriptor || "").trim() || null})
       RETURNING *
     `;
     const product = rows[0];

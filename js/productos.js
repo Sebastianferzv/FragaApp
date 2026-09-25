@@ -8,6 +8,7 @@ import {
   createSale,
 } from "./storage.js";
 import { calcularCosto, calcularMargen, formatCLP, formatPct } from "./calculator.js";
+import JsBarcode from "https://esm.sh/jsbarcode@3.11.6";
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
@@ -62,6 +63,8 @@ const fotoPreview = document.getElementById("producto-foto-preview");
 const inputPrecio = document.getElementById("producto-precio");
 const inputGramos = document.getElementById("producto-gramos");
 const inputHoras = document.getElementById("producto-horas");
+const inputDescriptor = document.getElementById("producto-descriptor");
+const codigoPreview = document.getElementById("producto-codigo-preview");
 const productoDesglose = document.getElementById("producto-desglose");
 const productoError = document.getElementById("producto-error");
 const btnEliminar = document.getElementById("producto-eliminar");
@@ -96,6 +99,24 @@ const ventaError = document.getElementById("venta-error");
 const ventaConfirmar = document.getElementById("venta-confirmar");
 const ventaClose = document.getElementById("venta-close");
 const ventaCancel = document.getElementById("venta-cancel");
+
+const barcodeOverlay = document.getElementById("barcode-overlay");
+const barcodeTitle = document.getElementById("barcode-title");
+const barcodeSvg = document.getElementById("barcode-svg");
+const barcodeMensaje = document.getElementById("barcode-mensaje");
+const barcodeClose = document.getElementById("barcode-close");
+
+function toBarcodeSafe(text) {
+  return (text || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
+function calcularCodigo(product) {
+  if (!product.nombre || !product.descriptor) return null;
+  return `FR-${toBarcodeSafe(product.nombre)}-${toBarcodeSafe(product.descriptor)}`;
+}
 
 function hoyLocalISO() {
   const ahora = new Date();
@@ -151,6 +172,11 @@ function agregarColor() {
   renderColoresList();
 }
 
+function updateCodigoPreview() {
+  const codigo = calcularCodigo({ nombre: inputNombre.value.trim(), descriptor: inputDescriptor.value.trim() });
+  codigoPreview.textContent = codigo ? `Código: ${codigo}` : "Código: completa el nombre y el descriptor para generarlo";
+}
+
 function openModal(product = null) {
   form.reset();
   selectedFile = null;
@@ -161,6 +187,7 @@ function openModal(product = null) {
   inputPrecio.value = product?.precioVenta ?? "";
   inputGramos.value = product?.gramosFilamento ?? "";
   inputHoras.value = product?.horas ?? "";
+  inputDescriptor.value = product?.descriptor || "";
   modalTitle.textContent = product ? "Editar producto" : "Nuevo producto";
   productoError.hidden = true;
   btnEliminar.hidden = !product;
@@ -175,6 +202,7 @@ function openModal(product = null) {
 
   renderColoresList();
   updateDesglosePreview();
+  updateCodigoPreview();
   overlay.hidden = false;
 }
 
@@ -253,7 +281,7 @@ function openVentaModal(product) {
 
   if (!esProductoCompleto(product)) {
     ventaColorSelect.innerHTML = "";
-    ventaError.textContent = "Completa foto, precio, gramos y horas del producto antes de vender.";
+    ventaError.textContent = "Completa foto, precio, gramos, horas y el descriptor del código antes de vender.";
     ventaError.hidden = false;
     ventaConfirmar.disabled = true;
     ventaOverlay.hidden = false;
@@ -286,8 +314,37 @@ function esProductoCompleto(product) {
     product.fotoUrl &&
       product.precioVenta > 0 &&
       product.gramosFilamento > 0 &&
-      product.horas > 0
+      product.horas > 0 &&
+      product.descriptor
   );
+}
+
+function openBarcodeModal(product) {
+  const codigo = calcularCodigo(product);
+  barcodeTitle.textContent = `Código de barras — ${product.nombre}`;
+
+  if (!codigo) {
+    barcodeSvg.innerHTML = "";
+    barcodeMensaje.textContent = "Este producto todavía no tiene descriptor. Edítalo para agregarlo y generar su código de barras.";
+    barcodeMensaje.hidden = false;
+  } else {
+    barcodeMensaje.hidden = true;
+    JsBarcode(barcodeSvg, codigo, {
+      format: "CODE128",
+      lineColor: "#000000",
+      width: 2,
+      height: 80,
+      displayValue: true,
+      fontSize: 16,
+      margin: 10,
+    });
+  }
+
+  barcodeOverlay.hidden = false;
+}
+
+function closeBarcodeModal() {
+  barcodeOverlay.hidden = true;
 }
 
 async function renderProductos() {
@@ -303,7 +360,7 @@ async function renderProductos() {
     const completo = esProductoCompleto(product);
     const puedeVender = completo && hayStock;
     let motivoBloqueo = "";
-    if (!completo) motivoBloqueo = "Completa foto, precio, gramos y horas para poder vender";
+    if (!completo) motivoBloqueo = "Completa foto, precio, gramos, horas y el descriptor del código para poder vender";
     else if (!hayStock) motivoBloqueo = "Sin stock disponible";
 
     const card = document.createElement("article");
@@ -329,6 +386,7 @@ async function renderProductos() {
             <button class="btn-icon-square btn-detalles" title="Detalles" aria-label="Detalles">ⓘ</button>
             <button class="btn-icon-square btn-editar" title="Editar" aria-label="Editar">✎</button>
             <button class="btn-icon-square btn-agregar-stock" title="Agregar stock" aria-label="Agregar stock">📦</button>
+            <button class="btn-icon-square btn-barcode" title="Código de barras" aria-label="Código de barras">🏷️</button>
           </div>
           <button class="btn btn-primary btn-vender" ${puedeVender ? "" : "disabled"} title="${motivoBloqueo}">Vender</button>
         </div>
@@ -338,6 +396,7 @@ async function renderProductos() {
     card.querySelector(".btn-detalles").addEventListener("click", () => openDetalleModal(product));
     card.querySelector(".btn-editar").addEventListener("click", () => openModal(product));
     card.querySelector(".btn-agregar-stock").addEventListener("click", () => openStockModal(product));
+    card.querySelector(".btn-barcode").addEventListener("click", () => openBarcodeModal(product));
     card.querySelector(".btn-vender").addEventListener("click", () => openVentaModal(product));
 
     grid.appendChild(card);
@@ -369,7 +428,16 @@ export async function initProductosPanel() {
     if (e.target === ventaOverlay) closeVentaModal();
   });
 
+  barcodeClose.addEventListener("click", closeBarcodeModal);
+  barcodeOverlay.addEventListener("click", (e) => {
+    if (e.target === barcodeOverlay) closeBarcodeModal();
+  });
+
   btnAgregarColor.addEventListener("click", agregarColor);
+
+  [inputNombre, inputDescriptor].forEach((input) =>
+    input.addEventListener("input", updateCodigoPreview)
+  );
 
   btnEliminar.addEventListener("click", async () => {
     const id = Number(inputId.value);
@@ -422,6 +490,7 @@ export async function initProductosPanel() {
         precioVenta: inputPrecio.value === "" ? null : Number(inputPrecio.value),
         gramosFilamento: inputGramos.value === "" ? null : Number(inputGramos.value),
         horas: inputHoras.value === "" ? null : Number(inputHoras.value),
+        descriptor: inputDescriptor.value.trim(),
       };
       if (esNuevo) {
         payload.colores = pendingColores;

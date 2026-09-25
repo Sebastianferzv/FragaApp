@@ -690,3 +690,12 @@ body {
 .toggle input:checked + .toggle-slider::before {
   transform: translateX(20px);
 }
+
+.barcode-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0;
+  background: white;
+  border-radius: 10px;
+}

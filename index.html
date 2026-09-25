@@ -180,7 +180,12 @@
           <input type="number" id="producto-horas" min="0" step="0.1">
         </div>
       </div>
-      <p class="muted">Solo el nombre es obligatorio. Completa foto, precio, gramos y horas antes de poder vender el producto.</p>
+
+      <div class="field">
+        <label for="producto-descriptor">Descriptor del código (para el código de barras)</label>
+        <input type="text" id="producto-descriptor" placeholder="Ej: A1, LOTE2...">
+        <p class="muted" id="producto-codigo-preview"></p>
+      </div>
 
       <div class="field" id="colores-crear-wrapper">
         <label>Colores disponibles</label>
@@ -212,6 +217,20 @@
       <button class="btn-icon" id="detalle-close" aria-label="Cerrar">×</button>
     </div>
     <div class="desglose" id="detalle-desglose"></div>
+  </div>
+</div>
+
+<!-- MODAL CODIGO DE BARRAS -->
+<div class="modal-overlay" id="barcode-overlay" hidden>
+  <div class="modal card">
+    <div class="modal-header">
+      <h3 id="barcode-title">Código de barras</h3>
+      <button class="btn-icon" id="barcode-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="barcode-content">
+      <svg id="barcode-svg"></svg>
+    </div>
+    <p class="muted" id="barcode-mensaje" hidden></p>
   </div>
 </div>
 

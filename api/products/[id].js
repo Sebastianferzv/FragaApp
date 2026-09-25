@@ -12,6 +12,7 @@ function toCamel(row, colores = []) {
     precioVenta: numOrNull(row.precio_venta),
     gramosFilamento: numOrNull(row.gramos_filamento),
     horas: numOrNull(row.horas),
+    descriptor: row.descriptor,
     creadoEn: row.creado_en,
     colores: colores.map((c) => ({ id: c.id, color: c.color, stock: c.stock })),
   };
@@ -27,14 +28,15 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas } = req.body || {};
+    const { nombre, fotoUrl, precioVenta, gramosFilamento, horas, descriptor } = req.body || {};
     const rows = await sql`
       UPDATE products SET
         nombre = ${nombre},
         foto_url = ${fotoUrl || null},
         precio_venta = ${numOrNull(precioVenta)},
         gramos_filamento = ${numOrNull(gramosFilamento)},
-        horas = ${numOrNull(horas)}
+        horas = ${numOrNull(horas)},
+        descriptor = ${(descriptor || "").trim() || null}
       WHERE id = ${id}
       RETURNING *
     `;

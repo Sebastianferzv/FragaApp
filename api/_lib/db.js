@@ -25,12 +25,14 @@ export async function ensureSchema() {
       precio_venta NUMERIC,
       gramos_filamento NUMERIC,
       horas NUMERIC,
+      descriptor TEXT,
       creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
   await sql`ALTER TABLE products ALTER COLUMN precio_venta DROP NOT NULL`;
   await sql`ALTER TABLE products ALTER COLUMN gramos_filamento DROP NOT NULL`;
   await sql`ALTER TABLE products ALTER COLUMN horas DROP NOT NULL`;
+  await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS descriptor TEXT`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS product_colors (
