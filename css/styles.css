@@ -633,14 +633,6 @@ body {
   border-bottom: 1px solid var(--azul-pastel);
 }
 
-.info-icon {
-  display: inline-block;
-  margin-left: 6px;
-  cursor: help;
-  color: var(--rosado-fuerte);
-  font-size: 0.95rem;
-}
-
 .tabla .btn-icon-square {
   width: 30px;
   height: 30px;

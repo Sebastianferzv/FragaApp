@@ -8,20 +8,12 @@ const tbody = document.getElementById("ventas-tbody");
 const editarOverlay = document.getElementById("venta-editar-overlay");
 const formEditar = document.getElementById("form-venta-editar");
 const inputFecha = document.getElementById("venta-editar-fecha");
+const inputPrecio = document.getElementById("venta-editar-precio");
 const inputComentario = document.getElementById("venta-editar-comentario");
 const editarError = document.getElementById("venta-editar-error");
 const editarClose = document.getElementById("venta-editar-close");
 const editarCancel = document.getElementById("venta-editar-cancel");
 const btnEliminarVenta = document.getElementById("venta-editar-eliminar");
-const btnAbrirEditarPrecio = document.getElementById("btn-abrir-editar-precio");
-
-const precioOverlay = document.getElementById("precio-editar-overlay");
-const formPrecio = document.getElementById("form-precio-editar");
-const inputPrecioNuevo = document.getElementById("precio-editar-nuevo");
-const inputMotivo = document.getElementById("precio-editar-motivo");
-const precioError = document.getElementById("precio-editar-error");
-const precioClose = document.getElementById("precio-editar-close");
-const precioCancel = document.getElementById("precio-editar-cancel");
 
 let ventaActiva = null;
 
@@ -38,6 +30,7 @@ function formatFecha(iso) {
 function openEditarModal(venta) {
   ventaActiva = venta;
   inputFecha.value = venta.vendidoEn.slice(0, 10);
+  inputPrecio.value = venta.precioVenta;
   inputComentario.value = venta.comentario || "";
   editarError.hidden = true;
   editarOverlay.hidden = false;
@@ -45,19 +38,6 @@ function openEditarModal(venta) {
 
 function closeEditarModal() {
   editarOverlay.hidden = true;
-}
-
-function openPrecioModal() {
-  inputPrecioNuevo.value = ventaActiva.precioVenta;
-  inputMotivo.value = "";
-  precioError.hidden = true;
-  editarOverlay.hidden = true;
-  precioOverlay.hidden = false;
-}
-
-function closePrecioModal(volverAEditar = true) {
-  precioOverlay.hidden = true;
-  if (volverAEditar) editarOverlay.hidden = false;
 }
 
 async function renderVentas() {
@@ -73,11 +53,7 @@ async function renderVentas() {
           <td>${formatFecha(v.vendidoEn)}</td>
           <td>${escapeHtml(v.productoNombre)}</td>
           <td>${escapeHtml(v.color)}</td>
-          <td>${formatCLP(v.precioVenta)}${
-            v.motivoRebaja
-              ? `<span class="info-icon" title="Motivo de la rebaja: ${escapeHtml(v.motivoRebaja)}">ⓘ</span>`
-              : ""
-          }</td>
+          <td>${formatCLP(v.precioVenta)}</td>
           <td>
             <label class="toggle">
               <input type="checkbox" class="pagado-toggle" data-index="${i}" ${v.pagado ? "checked" : ""}>
@@ -118,14 +94,6 @@ export async function initVentasPanel() {
     if (e.target === editarOverlay) closeEditarModal();
   });
 
-  btnAbrirEditarPrecio.addEventListener("click", openPrecioModal);
-
-  precioClose.addEventListener("click", () => closePrecioModal());
-  precioCancel.addEventListener("click", () => closePrecioModal());
-  precioOverlay.addEventListener("click", (e) => {
-    if (e.target === precioOverlay) closePrecioModal();
-  });
-
   btnEliminarVenta.addEventListener("click", async () => {
     if (!confirm("¿Eliminar esta venta? El stock vendido se restaurará al color correspondiente.")) return;
     try {
@@ -146,6 +114,7 @@ export async function initVentasPanel() {
     try {
       await updateSale(ventaActiva.id, {
         vendidoEn: inputFecha.value,
+        precioVenta: Number(inputPrecio.value) || 0,
         comentario: inputComentario.value.trim(),
       });
       closeEditarModal();
@@ -153,26 +122,6 @@ export async function initVentasPanel() {
     } catch (err) {
       editarError.textContent = "No se pudo guardar: " + err.message;
       editarError.hidden = false;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  formPrecio.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    precioError.hidden = true;
-    const btn = formPrecio.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    try {
-      await updateSale(ventaActiva.id, {
-        precioVenta: Number(inputPrecioNuevo.value) || 0,
-        motivoRebaja: inputMotivo.value.trim(),
-      });
-      closePrecioModal(false);
-      await renderVentas();
-    } catch (err) {
-      precioError.textContent = "No se pudo guardar: " + err.message;
-      precioError.hidden = false;
     } finally {
       btn.disabled = false;
     }

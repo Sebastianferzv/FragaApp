@@ -37,29 +37,14 @@ export default async function handler(req, res) {
     const finalComentario = "comentario" in body ? (body.comentario || "").trim() || null : venta.comentario;
     const finalPagado = "pagado" in body ? !!body.pagado : venta.pagado;
 
-    let finalPrecio = Number(venta.precio_venta);
-    let finalMotivo = venta.motivo_rebaja;
-
-    if ("precioVenta" in body) {
-      const nuevoPrecio = Number(body.precioVenta);
-      const motivo = (body.motivoRebaja || "").trim();
-      if (nuevoPrecio !== Number(venta.precio_venta)) {
-        if (!motivo) {
-          res.status(400).json({ error: "Debes indicar el motivo de la rebaja" });
-          return;
-        }
-        finalPrecio = nuevoPrecio;
-        finalMotivo = motivo;
-      }
-    }
+    const finalPrecio = "precioVenta" in body ? Number(body.precioVenta) || 0 : Number(venta.precio_venta);
 
     const rows = await sql`
       UPDATE sales SET
         vendido_en = ${finalVendidoEn},
         comentario = ${finalComentario},
         pagado = ${finalPagado},
-        precio_venta = ${finalPrecio},
-        motivo_rebaja = ${finalMotivo}
+        precio_venta = ${finalPrecio}
       WHERE id = ${id}
       RETURNING *
     `;
