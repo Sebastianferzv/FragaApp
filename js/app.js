@@ -9,6 +9,12 @@ const refrescadores = {
   historial: refreshHistorial,
 };
 
+function initRefreshButton() {
+  document.getElementById("btn-refresh").addEventListener("click", () => {
+    window.location.reload();
+  });
+}
+
 function initTabs() {
   const buttons = document.querySelectorAll(".tab-btn");
   buttons.forEach((btn) => {
@@ -25,6 +31,7 @@ function initTabs() {
 }
 
 (async function init() {
+  initRefreshButton();
   initTabs();
   await initProductosPanel();
   await initVentasPanel();

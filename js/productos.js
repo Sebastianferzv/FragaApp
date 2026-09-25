@@ -336,11 +336,11 @@ function openBarcodeModal(product) {
     JsBarcode(barcodeSvg, codigo, {
       format: "CODE128",
       lineColor: "#000000",
-      width: 2,
-      height: 80,
+      width: 1.2,
+      height: 100,
       displayValue: true,
-      fontSize: 16,
-      margin: 10,
+      fontSize: 14,
+      margin: 8,
     });
   }
 

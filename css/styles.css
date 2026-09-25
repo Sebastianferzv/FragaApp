@@ -130,6 +130,13 @@ body {
 
 .brand-accent { color: var(--rosado); }
 
+.btn-refresh {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 2;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
@@ -137,6 +144,7 @@ body {
   padding: 5px;
   border-radius: 999px;
   border: 2px solid var(--azul-oscuro);
+  margin-right: 50px;
 }
 
 .tab-btn {
