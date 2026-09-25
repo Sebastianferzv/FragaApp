@@ -1,13 +1,17 @@
 import { sql, ensureSchema } from "../_lib/db.js";
 
+function numOrNull(value) {
+  return value === null || value === undefined || value === "" ? null : Number(value);
+}
+
 function toCamel(row, colores = []) {
   return {
     id: row.id,
     nombre: row.nombre,
     fotoUrl: row.foto_url,
-    precioVenta: Number(row.precio_venta),
-    gramosFilamento: Number(row.gramos_filamento),
-    horas: Number(row.horas),
+    precioVenta: numOrNull(row.precio_venta),
+    gramosFilamento: numOrNull(row.gramos_filamento),
+    horas: numOrNull(row.horas),
     creadoEn: row.creado_en,
     colores: colores.map((c) => ({ id: c.id, color: c.color, stock: c.stock })),
   };
@@ -28,9 +32,9 @@ export default async function handler(req, res) {
       UPDATE products SET
         nombre = ${nombre},
         foto_url = ${fotoUrl || null},
-        precio_venta = ${precioVenta || 0},
-        gramos_filamento = ${gramosFilamento || 0},
-        horas = ${horas || 0}
+        precio_venta = ${numOrNull(precioVenta)},
+        gramos_filamento = ${numOrNull(gramosFilamento)},
+        horas = ${numOrNull(horas)}
       WHERE id = ${id}
       RETURNING *
     `;

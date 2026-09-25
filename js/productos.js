@@ -202,12 +202,19 @@ function updateDesglosePreview() {
 }
 
 function openDetalleModal(product) {
+  detalleTitle.textContent = `Detalles — ${product.nombre}`;
+
+  if (!esProductoCompleto(product)) {
+    detalleDesglose.innerHTML = `<p class="muted">Falta completar foto, precio, gramos y/u horas para calcular el costo y el margen.</p>`;
+    detalleOverlay.hidden = false;
+    return;
+  }
+
   const { costoFilamento, costoLuz, costoDesgaste, costoTotal } = calcularCosto(
     { gramos: product.gramosFilamento, horas: product.horas },
     cachedSettings
   );
   const { margen, margenPct } = calcularMargen(product.precioVenta, costoTotal);
-  detalleTitle.textContent = `Detalles — ${product.nombre}`;
   detalleDesglose.innerHTML = `
     <div class="desglose-row"><span>Costo filamento</span><span>${formatCLP(costoFilamento)}</span></div>
     <div class="desglose-row"><span>Costo luz</span><span>${formatCLP(costoLuz)}</span></div>
@@ -243,6 +250,16 @@ function openVentaModal(product) {
   formVenta.reset();
   ventaFecha.value = hoyLocalISO();
   ventaPagado.checked = false;
+
+  if (!esProductoCompleto(product)) {
+    ventaColorSelect.innerHTML = "";
+    ventaError.textContent = "Completa foto, precio, gramos y horas del producto antes de vender.";
+    ventaError.hidden = false;
+    ventaConfirmar.disabled = true;
+    ventaOverlay.hidden = false;
+    return;
+  }
+
   const disponibles = (product.colores || []).filter((c) => c.stock > 0);
 
   if (!disponibles.length) {
@@ -264,6 +281,15 @@ function closeVentaModal() {
   ventaOverlay.hidden = true;
 }
 
+function esProductoCompleto(product) {
+  return Boolean(
+    product.fotoUrl &&
+      product.precioVenta > 0 &&
+      product.gramosFilamento > 0 &&
+      product.horas > 0
+  );
+}
+
 async function renderProductos() {
   await refreshSettingsCache();
   const products = await getProducts();
@@ -274,6 +300,12 @@ async function renderProductos() {
   products.forEach((product) => {
     const colores = product.colores || [];
     const hayStock = colores.some((c) => c.stock > 0);
+    const completo = esProductoCompleto(product);
+    const puedeVender = completo && hayStock;
+    let motivoBloqueo = "";
+    if (!completo) motivoBloqueo = "Completa foto, precio, gramos y horas para poder vender";
+    else if (!hayStock) motivoBloqueo = "Sin stock disponible";
+
     const card = document.createElement("article");
     card.className = "producto-card";
     card.innerHTML = `
@@ -284,7 +316,7 @@ async function renderProductos() {
       }
       <div class="producto-body">
         <p class="producto-nombre">${product.nombre}</p>
-        <p class="producto-precio">${formatCLP(product.precioVenta)}</p>
+        <p class="producto-precio">${product.precioVenta != null ? formatCLP(product.precioVenta) : "Sin precio"}</p>
         <div class="color-chips">
           ${
             colores.length
@@ -298,7 +330,7 @@ async function renderProductos() {
             <button class="btn-icon-square btn-editar" title="Editar" aria-label="Editar">✎</button>
             <button class="btn-icon-square btn-agregar-stock" title="Agregar stock" aria-label="Agregar stock">📦</button>
           </div>
-          <button class="btn btn-primary btn-vender" ${hayStock ? "" : "disabled"}>Vender</button>
+          <button class="btn btn-primary btn-vender" ${puedeVender ? "" : "disabled"} title="${motivoBloqueo}">Vender</button>
         </div>
       </div>
     `;
@@ -387,9 +419,9 @@ export async function initProductosPanel() {
       const payload = {
         nombre: inputNombre.value.trim(),
         fotoUrl,
-        precioVenta: Number(inputPrecio.value) || 0,
-        gramosFilamento: Number(inputGramos.value) || 0,
-        horas: Number(inputHoras.value) || 0,
+        precioVenta: inputPrecio.value === "" ? null : Number(inputPrecio.value),
+        gramosFilamento: inputGramos.value === "" ? null : Number(inputGramos.value),
+        horas: inputHoras.value === "" ? null : Number(inputHoras.value),
       };
       if (esNuevo) {
         payload.colores = pendingColores;

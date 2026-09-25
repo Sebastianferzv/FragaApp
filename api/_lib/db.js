@@ -22,12 +22,15 @@ export async function ensureSchema() {
       id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) PRIMARY KEY,
       nombre TEXT NOT NULL,
       foto_url TEXT,
-      precio_venta NUMERIC NOT NULL,
-      gramos_filamento NUMERIC NOT NULL,
-      horas NUMERIC NOT NULL,
+      precio_venta NUMERIC,
+      gramos_filamento NUMERIC,
+      horas NUMERIC,
       creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  await sql`ALTER TABLE products ALTER COLUMN precio_venta DROP NOT NULL`;
+  await sql`ALTER TABLE products ALTER COLUMN gramos_filamento DROP NOT NULL`;
+  await sql`ALTER TABLE products ALTER COLUMN horas DROP NOT NULL`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS product_colors (

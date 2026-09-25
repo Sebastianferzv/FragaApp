@@ -1,13 +1,17 @@
 import { sql, ensureSchema, getAllProductColors, replaceProductColors, logStockHistory } from "../_lib/db.js";
 
+function numOrNull(value) {
+  return value === null || value === undefined || value === "" ? null : Number(value);
+}
+
 function toCamel(row, colores = []) {
   return {
     id: row.id,
     nombre: row.nombre,
     fotoUrl: row.foto_url,
-    precioVenta: Number(row.precio_venta),
-    gramosFilamento: Number(row.gramos_filamento),
-    horas: Number(row.horas),
+    precioVenta: numOrNull(row.precio_venta),
+    gramosFilamento: numOrNull(row.gramos_filamento),
+    horas: numOrNull(row.horas),
     creadoEn: row.creado_en,
     colores: colores.map((c) => ({ id: c.id, color: c.color, stock: c.stock })),
   };
@@ -38,7 +42,7 @@ export default async function handler(req, res) {
     }
     const rows = await sql`
       INSERT INTO products (nombre, foto_url, precio_venta, gramos_filamento, horas)
-      VALUES (${nombre}, ${fotoUrl || null}, ${precioVenta || 0}, ${gramosFilamento || 0}, ${horas || 0})
+      VALUES (${nombre}, ${fotoUrl || null}, ${numOrNull(precioVenta)}, ${numOrNull(gramosFilamento)}, ${numOrNull(horas)})
       RETURNING *
     `;
     const product = rows[0];
